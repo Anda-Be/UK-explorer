@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UK Nations — Language & Culture Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --eng: #C8102E;
+  --sco: #003087;
+  --wal: #00A550;
+  --nir: #F4A823;
+  --bg: #F7F4EE;
+  --surface: #FFFFFF;
+  --text: #1A1A1A;
+  --muted: #666;
+  --border: rgba(0,0,0,0.08);
+  --radius: 16px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(247,244,238,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  display: flex; align-items: center; gap: 0;
+}
+.nav-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  padding: 1rem 1.5rem 1rem 0;
+  border-right: 1px solid var(--border);
+  margin-right: 1.5rem;
+  white-space: nowrap;
+}
+.nav-tabs {
+  display: flex; gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.nav-tabs::-webkit-scrollbar { display: none; }
+.nav-tab {
+  padding: 1rem 1.2rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+  color: var(--muted);
+}
+.nav-tab:hover { color: var(--text); }
+.nav-tab.active { color: var(--text); border-bottom-color: var(--text); }
+
+/* HERO */
+.hero {
+  padding: 5rem 2rem 4rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: center;
+}
+.hero-flags {
+  display: flex; justify-content: center; gap: 1rem; margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+}
+.flag-badge {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 100px;
+  font-size: 0.8rem; font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s;
+  border: 2px solid transparent;
+}
+.flag-badge:hover { transform: translateY(-2px); }
+.flag-badge.eng { background: #FFF0F2; color: var(--eng); border-color: var(--eng); }
+.flag-badge.sco { background: #EEF2FF; color: var(--sco); border-color: var(--sco); }
+.flag-badge.wal { background: #EEFAF4; color: var(--wal); border-color: var(--wal); }
+.flag-badge.nir { background: #FFF8EC; color: var(--nir); border-color: var(--nir); }
+.flag-badge .dot { width: 8px; height: 8px; border-radius: 50%; }
+.flag-badge.eng .dot { background: var(--eng); }
+.flag-badge.sco .dot { background: var(--sco); }
+.flag-badge.wal .dot { background: var(--wal); }
+.flag-badge.nir .dot { background: var(--nir); }
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  line-height: 1.15;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+.hero h1 em { font-style: italic; color: var(--muted); }
+.hero p {
+  font-size: 1.05rem;
+  color: var(--muted);
+  max-width: 580px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+/* SECTIONS */
+.section { display: none; padding: 1rem 2rem 4rem; max-width: 1100px; margin: 0 auto; }
+.section.active { display: block; }
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem;
+  margin-bottom: 0.4rem;
+}
+.section-subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 2.5rem; }
+
+/* NATION CARDS */
+.nation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+.nation-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  transition: all 0.3s;
+  cursor: pointer;
+}
+.nation-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.1); }
+.nation-card.active-card { box-shadow: 0 0 0 2px var(--accent, #000) inset; }
+.card-header {
+  padding: 1.5rem;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+.card-header::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+}
+.card-header h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; position: relative; z-index: 1; }
+.card-header p { font-size: 0.8rem; opacity: 0.85; margin-top: 0.2rem; position: relative; z-index: 1; }
+.card-flag { font-size: 2.2rem; position: absolute; right: 1.2rem; top: 1rem; z-index: 1; }
+.card-body { padding: 1.5rem; }
+.card-stat { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+.card-stat:last-child { border-bottom: none; }
+.stat-label { font-size: 0.8rem; color: var(--muted); }
+.stat-value { font-size: 0.85rem; font-weight: 500; }
+
+.eng-card .card-header { background: var(--eng); }
+.sco-card .card-header { background: var(--sco); }
+.wal-card .card-header { background: var(--wal); }
+.nir-card .card-header { background: var(--nir); }
+
+/* WORD COMPARISON */
+.word-table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+.word-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.word-table th {
+  padding: 0.85rem 1.2rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 500;
+  color: var(--muted);
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  position: sticky; top: 0;
+}
+.word-table td { padding: 0.85rem 1.2rem; border-bottom: 1px solid var(--border); }
+.word-table tr:last-child td { border-bottom: none; }
+.word-table tr:hover td { background: rgba(0,0,0,0.02); }
+.word-table .concept { font-weight: 500; color: var(--muted); font-size: 0.8rem; }
+.badge { display: inline-block; padding: 0.25rem 0.7rem; border-radius: 100px; font-size: 0.78rem; font-weight: 500; }
+.badge.eng { background: #FFF0F2; color: var(--eng); }
+.badge.sco { background: #EEF2FF; color: var(--sco); }
+.badge.wal { background: #EEFAF4; color: var(--wal); }
+.badge.nir { background: #FFF8EC; color: var(--nir); }
+.badge.shared { background: #F5F5F5; color: #555; }
+.search-bar {
+  width: 100%;
+  padding: 0.85rem 1.2rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  margin-bottom: 1.2rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-bar:focus { border-color: #999; }
+.filter-row { display: flex; gap: 0.6rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.filter-btn {
+  padding: 0.4rem 1rem;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'DM Sans', sans-serif;
+}
+.filter-btn:hover { background: var(--bg); }
+.filter-btn.active-filter { background: var(--text); color: white; border-color: var(--text); }
+
+/* QUIZ */
+.quiz-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 2rem;
+  border: 1px solid var(--border);
+  max-width: 680px;
+  margin: 0 auto;
+}
+.quiz-progress { display: flex; gap: 4px; margin-bottom: 2rem; }
+.progress-dot { height: 4px; flex: 1; border-radius: 2px; background: var(--border); transition: background 0.3s; }
+.progress-dot.done { background: var(--text); }
+.progress-dot.current { background: #999; }
+.quiz-nation-tag {
+  display: inline-block;
+  padding: 0.3rem 0.8rem;
+  border-radius: 100px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+.quiz-q { font-family: 'Playfair Display', serif; font-size: 1.35rem; margin-bottom: 0.6rem; line-height: 1.4; }
+.quiz-context { font-size: 0.88rem; color: var(--muted); margin-bottom: 1.8rem; font-style: italic; }
+.quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+@media (max-width: 520px) { .quiz-options { grid-template-columns: 1fr; } }
+.quiz-opt {
+  padding: 0.9rem 1.2rem;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-align: left;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+}
+.quiz-opt:hover:not(:disabled) { border-color: #999; background: white; }
+.quiz-opt.correct { border-color: var(--wal); background: #EEFAF4; color: var(--wal); }
+.quiz-opt.wrong { border-color: var(--eng); background: #FFF0F2; color: var(--eng); }
+.quiz-opt:disabled { cursor: default; }
+.quiz-feedback {
+  margin-top: 1.5rem;
+  padding: 1rem 1.2rem;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  display: none;
+}
+.quiz-feedback.show { display: block; }
+.quiz-feedback.correct-fb { background: #EEFAF4; color: #2A7A50; }
+.quiz-feedback.wrong-fb { background: #FFF0F2; color: #A83020; }
+.quiz-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; }
+.quiz-score-sm { font-size: 0.85rem; color: var(--muted); }
+.btn-next {
+  padding: 0.7rem 1.6rem;
+  border-radius: 100px;
+  background: var(--text);
+  color: white;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: none;
+  transition: opacity 0.2s;
+}
+.btn-next:hover { opacity: 0.85; }
+.btn-next.show { display: inline-block; }
+.quiz-result {
+  text-align: center;
+  padding: 3rem 2rem;
+}
+.quiz-result-score {
+  font-family: 'Playfair Display', serif;
+  font-size: 4rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+.quiz-result p { color: var(--muted); margin-bottom: 2rem; font-size: 0.95rem; }
+.btn-restart {
+  padding: 0.8rem 2rem;
+  border-radius: 100px;
+  background: var(--text);
+  color: white;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* CULTURE SECTION */
+.culture-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.2rem;
+}
+.culture-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+}
+.culture-icon { font-size: 2rem; margin-bottom: 0.8rem; }
+.culture-card h3 { font-family: 'Playfair Display', serif; font-size: 1.05rem; margin-bottom: 0.8rem; }
+.culture-entries { display: flex; flex-direction: column; gap: 0.5rem; }
+.culture-entry { display: flex; gap: 0.6rem; align-items: flex-start; }
+.culture-entry .badge { flex-shrink: 0; }
+.culture-entry p { font-size: 0.83rem; color: var(--muted); line-height: 1.5; }
+
+/* MAP VISUAL */
+.map-section { display: flex; gap: 2rem; flex-wrap: wrap; align-items: flex-start; margin-bottom: 2rem; }
+.map-svg-wrap { flex: 0 0 auto; }
+.map-info { flex: 1; min-width: 220px; }
+.map-legend { display: flex; flex-direction: column; gap: 0.8rem; }
+.legend-item { display: flex; align-items: center; gap: 0.8rem; cursor: pointer; padding: 0.8rem 1rem; border-radius: 10px; transition: background 0.2s; }
+.legend-item:hover { background: rgba(0,0,0,0.04); }
+.legend-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+.legend-text h4 { font-size: 0.9rem; font-weight: 500; }
+.legend-text p { font-size: 0.78rem; color: var(--muted); }
+.lang-stat-row { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1.5rem; }
+.lang-stat { display: flex; flex-direction: column; gap: 0.3rem; }
+.lang-stat-label { display: flex; justify-content: space-between; font-size: 0.8rem; }
+.lang-stat-bar { height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; }
+.lang-stat-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+
+/* PRONUNCIATION */
+.phrase-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.2rem; }
+.phrase-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+}
+.phrase-card h3 { font-family: 'Playfair Display', serif; font-size: 1rem; margin-bottom: 1rem; }
+.phrase-list { display: flex; flex-direction: column; gap: 0.7rem; }
+.phrase-item { display: flex; flex-direction: column; gap: 0.2rem; }
+.phrase-word { font-weight: 500; font-size: 0.92rem; }
+.phrase-pron { font-size: 0.82rem; color: var(--muted); font-family: monospace; }
+.phrase-meaning { font-size: 0.8rem; color: var(--muted); font-style: italic; }
+
+/* FOOTER */
+footer {
+  border-top: 1px solid var(--border);
+  text-align: center;
+  padding: 2rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">🇬🇧 UK Explorer</div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="showSection('overview')">Prezentare</div>
+    <div class="nav-tab" onclick="showSection('words')">Vocabular</div>
+    <div class="nav-tab" onclick="showSection('pronunciation')">Pronunție</div>
+    <div class="nav-tab" onclick="showSection('culture')">Cultură</div>
+    <div class="nav-tab" onclick="showSection('languages')">Limbi</div>
+    <div class="nav-tab" onclick="showSection('quiz')">Quiz</div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-flags">
+    <div class="flag-badge eng"><div class="dot"></div> Anglia</div>
+    <div class="flag-badge sco"><div class="dot"></div> Scoția</div>
+    <div class="flag-badge wal"><div class="dot"></div> Țara Galilor</div>
+    <div class="flag-badge nir"><div class="dot"></div> Irlanda de Nord</div>
+  </div>
+  <h1>Patru națiuni,<br><em>o singură insulă</em></h1>
+  <p>Explorează diferențele lingvistice, culturale și de vocabular dintre cele patru națiuni constitutive ale Regatului Unit.</p>
+</div>
+
+<!-- OVERVIEW SECTION -->
+<div id="section-overview" class="section active">
+  <div class="section-title">Prezentare generală</div>
+  <div class="section-subtitle">Fapte esențiale despre fiecare națiune</div>
+  <div class="nation-grid">
+    <div class="nation-card eng-card">
+      <div class="card-header">
+        <div class="card-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
+        <h2>Anglia</h2>
+        <p>England</p>
+      </div>
+      <div class="card-body">
+        <div class="card-stat"><span class="stat-label">Capitală</span><span class="stat-value">Londra</span></div>
+        <div class="card-stat"><span class="stat-label">Populație</span><span class="stat-value">~56 mil.</span></div>
+        <div class="card-stat"><span class="stat-label">Limbă oficială</span><span class="stat-value">Engleză</span></div>
+        <div class="card-stat"><span class="stat-label">Accent iconic</span><span class="stat-value">RP / Cockney / Scouse</span></div>
+        <div class="card-stat"><span class="stat-label">Sport național</span><span class="stat-value">Fotbal</span></div>
+        <div class="card-stat"><span class="stat-label">Sf. Patron</span><span class="stat-value">Sf. Gheorghe (23 Apr)</span></div>
+      </div>
+    </div>
+    <div class="nation-card sco-card">
+      <div class="card-header">
+        <div class="card-flag">🏴󠁧󠁢󠁳󠁣󠁴󠁿</div>
+        <h2>Scoția</h2>
+        <p>Scotland</p>
+      </div>
+      <div class="card-body">
+        <div class="card-stat"><span class="stat-label">Capitală</span><span class="stat-value">Edinburgh</span></div>
+        <div class="card-stat"><span class="stat-label">Populație</span><span class="stat-value">~5.5 mil.</span></div>
+        <div class="card-stat"><span class="stat-label">Limbi</span><span class="stat-value">Engleză, Scots, Gaelică</span></div>
+        <div class="card-stat"><span class="stat-label">Accent iconic</span><span class="stat-value">Edinburgh / Glasgow</span></div>
+        <div class="card-stat"><span class="stat-label">Sport național</span><span class="stat-value">Golf / Fotbal</span></div>
+        <div class="card-stat"><span class="stat-label">Sf. Patron</span><span class="stat-value">Sf. Andrei (30 Nov)</span></div>
+      </div>
+    </div>
+    <div class="nation-card wal-card">
+      <div class="card-header">
+        <div class="card-flag">🏴󠁧󠁢󠁷󠁬󠁳󠁿</div>
+        <h2>Țara Galilor</h2>
+        <p>Wales</p>
+      </div>
+      <div class="card-body">
+        <div class="card-stat"><span class="stat-label">Capitală</span><span class="stat-value">Cardiff</span></div>
+        <div class="card-stat"><span class="stat-label">Populație</span><span class="stat-value">~3.2 mil.</span></div>
+        <div class="card-stat"><span class="stat-label">Limbi</span><span class="stat-value">Engleză + Galeză (oficiale)</span></div>
+        <div class="card-stat"><span class="stat-label">Accent iconic</span><span class="stat-value">Valleys / Cardiff</span></div>
+        <div class="card-stat"><span class="stat-label">Sport național</span><span class="stat-value">Rugby</span></div>
+        <div class="card-stat"><span class="stat-label">Sf. Patron</span><span class="stat-value">Sf. David (1 Mar)</span></div>
+      </div>
+    </div>
+    <div class="nation-card nir-card">
+      <div class="card-header">
+        <div class="card-flag">🇬🇧</div>
+        <h2>Irlanda de Nord</h2>
+        <p>Northern Ireland</p>
+      </div>
+      <div class="card-body">
+        <div class="card-stat"><span class="stat-label">Capitală</span><span class="stat-value">Belfast</span></div>
+        <div class="card-stat"><span class="stat-label">Populație</span><span class="stat-value">~1.9 mil.</span></div>
+        <div class="card-stat"><span class="stat-label">Limbi</span><span class="stat-value">Engleză, Irlandeză, Scots</span></div>
+        <div class="card-stat"><span class="stat-label">Accent iconic</span><span class="stat-value">Belfast / Ulster</span></div>
+        <div class="card-stat"><span class="stat-label">Sport național</span><span class="stat-value">GAA / Fotbal</span></div>
+        <div class="card-stat"><span class="stat-label">Sf. Patron</span><span class="stat-value">Sf. Patrick (17 Mar)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick fun facts -->
+  <div class="section-title" style="margin-top:1rem">Fapte interesante</div>
+  <div class="section-subtitle">Lucruri pe care poate nu le știai</div>
+  <div class="culture-grid">
+    <div class="culture-card">
+      <div class="culture-icon">🏛️</div>
+      <h3>Parlamente separate</h3>
+      <p style="font-size:0.85rem;color:var(--muted);line-height:1.6">Scoția, Țara Galilor și Irlanda de Nord au propriile parlamente sau adunări legislative. Anglia nu are — legile sale sunt adoptate de Parlamentul UK din Westminster.</p>
+    </div>
+    <div class="culture-card">
+      <div class="culture-icon">🪙</div>
+      <h3>Bancnote diferite</h3>
+      <p style="font-size:0.85rem;color:var(--muted);line-height:1.6">Scoția și Irlanda de Nord emit propriile bancnote. Sunt lire sterline valide, dar comercianții din Anglia le pot refuza — deși sunt obligați legal să le accepte ca mijloc de plată.</p>
+    </div>
+    <div class="culture-card">
+      <div class="culture-icon">⚽</div>
+      <h3>Echipe naționale separate</h3>
+      <p style="font-size:0.85rem;color:var(--muted);line-height:1.6">La fotbal, rugby și cricket, fiecare națiune concurează separat. Există deci patru echipe la Campionatul Mondial, nu una singură — un lucru rar în lumea sportului internațional.</p>
+    </div>
+    <div class="culture-card">
+      <div class="culture-icon">📜</div>
+      <h3>Sisteme juridice diferite</h3>
+      <p style="font-size:0.85rem;color:var(--muted);line-height:1.6">Scoția are propriul sistem de drept (bazat pe dreptul civil și cel comun), distinct de cel al Angliei și Țării Galilor. O terță opțiune de verdiet — „Not proven" — există doar în Scoția.</p>
+    </div>
+  </div>
+</div>
+
+<!-- WORDS SECTION -->
+<div id="section-words" class="section">
+  <div class="section-title">Vocabular comparat</div>
+  <div class="section-subtitle">Aceleași lucruri, denumite diferit de la o națiune la alta</div>
+  <input class="search-bar" type="text" placeholder="Caută un cuvânt sau concept..." id="word-search" oninput="filterWords()">
+  <div class="filter-row">
+    <button class="filter-btn active-filter" onclick="setWordFilter('all', this)">Toate categoriile</button>
+    <button class="filter-btn" onclick="setWordFilter('food', this)">🍽️ Mâncare</button>
+    <button class="filter-btn" onclick="setWordFilter('daily', this)">🗣️ Zi de zi</button>
+    <button class="filter-btn" onclick="setWordFilter('places', this)">📍 Locuri</button>
+    <button class="filter-btn" onclick="setWordFilter('slang', this)">😄 Argou</button>
+    <button class="filter-btn" onclick="setWordFilter('greeting', this)">👋 Salut</button>
+  </div>
+  <div class="word-table-wrap">
+    <table class="word-table" id="word-table">
+      <thead>
+        <tr>
+          <th>Concept</th>
+          <th>🏴󠁧󠁢󠁥󠁮󠁧󠁿 Anglia</th>
+          <th>🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scoția</th>
+          <th>🏴󠁧󠁢󠁷󠁬󠁳󠁿 Țara Galilor</th>
+          <th>🇬🇧 Irlanda de Nord</th>
+        </tr>
+      </thead>
+      <tbody id="word-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- PRONUNCIATION SECTION -->
+<div id="section-pronunciation" class="section">
+  <div class="section-title">Accente & Pronunție</div>
+  <div class="section-subtitle">Cum sună aceleași cuvinte în diferite regiuni</div>
+  <div class="phrase-cards" id="pron-cards"></div>
+</div>
+
+<!-- CULTURE SECTION -->
+<div id="section-culture" class="section">
+  <div class="section-title">Tradiții & Obiceiuri</div>
+  <div class="section-subtitle">Ce face fiecare națiune unică din punct de vedere cultural</div>
+  <div class="culture-grid" id="culture-grid"></div>
+</div>
+
+<!-- LANGUAGES SECTION -->
+<div id="section-languages" class="section">
+  <div class="section-title">Limbile Regatului Unit</div>
+  <div class="section-subtitle">Dincolo de engleză — limbi vorbite în fiecare colț al UK</div>
+  <div class="map-section">
+    <div class="map-svg-wrap">
+      <svg width="200" viewBox="0 0 200 380" xmlns="http://www.w3.org/2000/svg">
+        <!-- Simplified UK map shapes -->
+        <!-- England -->
+        <path d="M80,180 L140,160 L160,200 L155,280 L130,320 L100,330 L75,300 L70,260 L60,220 Z" fill="#FFEEF1" stroke="#C8102E" stroke-width="1.5"/>
+        <text x="110" y="255" font-size="9" text-anchor="middle" fill="#C8102E" font-family="DM Sans,sans-serif" font-weight="500">Anglia</text>
+        <!-- Wales -->
+        <path d="M70,260 L75,300 L55,310 L45,290 L50,260 Z" fill="#EEFAF4" stroke="#00A550" stroke-width="1.5"/>
+        <text x="57" y="287" font-size="7" text-anchor="middle" fill="#00A550" font-family="DM Sans,sans-serif" font-weight="500">Wales</text>
+        <!-- Scotland -->
+        <path d="M70,180 L80,180 L60,220 L50,200 L40,160 L50,120 L70,90 L100,70 L130,80 L140,100 L140,160 L80,180 Z" fill="#EEF2FF" stroke="#003087" stroke-width="1.5"/>
+        <text x="92" y="130" font-size="9" text-anchor="middle" fill="#003087" font-family="DM Sans,sans-serif" font-weight="500">Scoția</text>
+        <!-- Northern Ireland (simplified, separate) -->
+        <path d="M30,170 L55,160 L60,185 L40,195 Z" fill="#FFF8EC" stroke="#F4A823" stroke-width="1.5"/>
+        <text x="43" y="180" font-size="7" text-anchor="middle" fill="#c48a10" font-family="DM Sans,sans-serif" font-weight="500">NI</text>
+        <!-- Islands -->
+        <ellipse cx="80" cy="50" rx="12" ry="18" fill="#EEF2FF" stroke="#003087" stroke-width="1"/>
+        <ellipse cx="60" cy="40" rx="8" ry="12" fill="#EEF2FF" stroke="#003087" stroke-width="1"/>
+      </svg>
+    </div>
+    <div class="map-info">
+      <div class="map-legend" id="map-legend"></div>
+      <div class="lang-stat-row" id="lang-stats"></div>
+    </div>
+  </div>
+  <div class="culture-grid" id="lang-details"></div>
+</div>
+
+<!-- QUIZ SECTION -->
+<div id="section-quiz" class="section">
+  <div class="section-title">Testează-ți cunoștințele</div>
+  <div class="section-subtitle">10 întrebări despre diferențele lingvistice și culturale din UK</div>
+  <div class="quiz-card" id="quiz-card">
+    <div class="quiz-progress" id="quiz-progress"></div>
+    <div id="quiz-content"></div>
+    <div class="quiz-footer">
+      <div class="quiz-score-sm" id="quiz-score-sm">Scor: 0</div>
+      <button class="btn-next" id="btn-next" onclick="nextQuestion()">Următoarea →</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>Aplicație educațională despre Regatul Unit · Conținut pur static, fără API extern · GitHub Pages Ready</p>
+</footer>
+
+<script>
+const WORDS = [
+  { concept:"Salut informal", cat:"greeting", eng:"Hey / Hi", sco:"Aye / Hiya", wal:"Helo / Sut mae (Galeză)", nir:"Hi ye / Bout ye" },
+  { concept:"Băuturi alcoolice (general)", cat:"slang", eng:"Drinks / Booze", sco:"Bevvy / Dram", wal:"Peint / Sesh", nir:"Tins / Cans" },
+  { concept:"Mulțumesc", cat:"daily", eng:"Thanks / Cheers", sco:"Ta / Cheers", wal:"Diolch (Galeză)", nir:"Cheers / Ta" },
+  { concept:"Cum ești?", cat:"greeting", eng:"How are you?", sco:"How ye daein?", wal:"Sut wyt ti? / Alright?", nir:"How's about ye?" },
+  { concept:"Pâine albă feliată", cat:"food", eng:"Bread / Loaf", sco:"Pan loaf / Plain bread", wal:"Bread (bara)", nir:"Soda bread / Batch loaf" },
+  { concept:"Cârnați la cuptor", cat:"food", eng:"Banger / Sausage", sco:"Lorne sausage (pătrat!)", wal:"Faggots / Sausage", nir:"Banger / Pork sausage" },
+  { concept:"Mic dejun complet", cat:"food", eng:"Full English", sco:"Full Scottish (haggis!)", wal:"Full Welsh (laverbread!)", nir:"Ulster Fry (soda bread!)" },
+  { concept:"Cartof prăjit (chipsuri lungi)", cat:"food", eng:"Chips", sco:"Chips", wal:"Chips", nir:"Chips" },
+  { concept:"Chipsuri din pungă", cat:"food", eng:"Crisps", sco:"Crisps", wal:"Crisps", nir:"Crisps" },
+  { concept:"Toaletă / WC", cat:"daily", eng:"Toilet / Loo", sco:"Lavvy / Bog", wal:"Ty bach (Galeză) / Loo", nir:"Toilet / The jacks" },
+  { concept:"Prietene (adresare)", cat:"slang", eng:"Mate / Pal", sco:"Pal / Heid banger", wal:"Butt / Mun / Mush", nir:"Mucker / Lad" },
+  { concept:"Obosit", cat:"daily", eng:"Tired / Knackered", sco:"Puggled / Jiggered", wal:"Tired / Jiggered", nir:"Wrecked / Banjaxed" },
+  { concept:"Minunat / Excelent", cat:"slang", eng:"Brilliant / Smashing", sco:"Braw / Belter", wal:"Lush / Bostin", nir:"Deadly / Class / Sound" },
+  { concept:"Autobuz", cat:"places", eng:"Bus", sco:"Bus", wal:"Bws (Galeză)", nir:"Bus" },
+  { concept:"Centru oraș", cat:"places", eng:"Town centre", sco:"Town centre / The toon", wal:"Canol y dref / Town", nir:"Town / The town" },
+  { concept:"Stradă principală", cat:"places", eng:"High Street", sco:"High Street", wal:"Stryd Fawr (Galeză)", nir:"Main street" },
+  { concept:"Copil mic", cat:"daily", eng:"Kid / Child", sco:"Bairn / Wean", wal:"Kid / Plentyn", nir:"Wee one / Youngster" },
+  { concept:"Cap", cat:"slang", eng:"Head", sco:"Heid", wal:"Head / Pen (Galeză)", nir:"Head / Napper" },
+  { concept:"Bani / Numerar", cat:"daily", eng:"Money / Cash / Dosh", sco:"Siller / Brass", wal:"Pres (Galeză) / Money", nir:"Dosh / Spondulix" },
+  { concept:"Petrecere / Distracție", cat:"slang", eng:"Party / Night out", sco:"Bevvy session / Bash", wal:"Knees-up / Do", nir:"Hooley / Craic" },
+];
+
+const QUIZ_DATA = [
+  { q:"Ce înseamnă «bairn» în scoțiană?", ctx:"Aceasta este o expresie tipică Scots (dialectul scoțian).", opts:["Bărbat bătrân","Copil","Câine","Munte"], ans:1, nat:"sco", exp:"«Bairn» vine din Old Norse «barn» și înseamnă copil. Este folosit larg în Scoția și în dialectele nordice ale Angliei." },
+  { q:"Care este micul dejun tradițional din Irlanda de Nord?", ctx:"Fiecare națiune UK are propria versiune a micului dejun complet.", opts:["Full English","Full Scottish","Ulster Fry","Welsh Breakfast"], ans:2, nat:"nir", exp:"Ulster Fry conține soda bread și potato bread prăjite — elemente specifice Irlandei de Nord, absente în celelalte versiuni." },
+  { q:"«Diolch» înseamnă «mulțumesc» în ce limbă?", ctx:"Această limbă are statut oficial alături de engleză.", opts:["Gaelică scoțiană","Galeză","Irlandeză","Cornish"], ans:1, nat:"wal", exp:"Galeza (Welsh) este limbă oficială în Țara Galilor. «Diolch» se pronunță aproximativ «dee-olch»." },
+  { q:"Ce face «Lorne sausage» să fie specific scoțian?", ctx:"Este un element clasic al micului dejun scoțian.", opts:["E roșu","Are formă pătrată","E din pui","E servit rece"], ans:1, nat:"sco", exp:"Lorne sausage (sau «square sausage») este un cârnat plat, pătrat — unic în Scoția și imediat recunoscut de orice scoțian." },
+  { q:"Cum salută oamenii informal în Belfast?", ctx:"Irlanda de Nord are expresii de salut foarte distincte.", opts:["How do you do?","Alright mate?","Bout ye?","How ye daein?"], ans:2, nat:"nir", exp:"«Bout ye?» (prescurtare din «What about ye?») este salutul informal clasic din Belfast și Irlanda de Nord." },
+  { q:"Ce limbă celtică se vorbește în Scoția (nu în Irlanda de Nord)?", ctx:"Există trei limbi celtice vorbite pe insulele britanice.", opts:["Cornish","Bretonă","Gaelică scoțiană","Manx"], ans:2, nat:"sco", exp:"Scottish Gaelic (Gàidhlig) se vorbește de aproximativ 60.000 persoane, concentrat în Highlands și insulele din vest." },
+  { q:"Ce înseamnă «lush» în argoul din Țara Galilor?", ctx:"«Lush» are semnificații diferite în diferite regiuni.", opts:["Excelent / Grozav","Beat / Obosit","Flămând","Supărat"], ans:0, nat:"wal", exp:"În Țara Galilor (mai ales Cardiff și sudul), «lush» înseamnă ceva minunat, grozav. «That's lush!» = «Asta e super!»." },
+  { q:"Ce ingredient pune Țara Galilor în micul dejun tradițional?", ctx:"Acest ingredient vine din mare și este specific coastei galeze.", opts:["Brânză cheddar","Laverbread (alge)","Ceapă verde","Miere"], ans:1, nat:"wal", exp:"Laverbread (bara lawr) este o pastă din alge marine gătite, un aliment tradițional galez servit de regulă cu slănină la micul dejun." },
+  { q:"Ce sistem juridic diferit are Scoția față de restul UK?", ctx:"Scoția și-a păstrat sistemul juridic propriu după Actul de Unire din 1707.", opts:["Drept napoleonian","Drept roman","Sistem mixt civil + common law","Drept islamic"], ans:2, nat:"sco", exp:"Scoția folosește un sistem juridic mixt (drept civil roman + common law), cu o opțiune de verdict inexistentă în altă parte: «Not proven»." },
+  { q:"Câte parlamente/adunări legislative există în UK?", ctx:"Devoluția a creat instituții legislative separate.", opts:["1","2","3","4"], ans:3, nat:"nir", exp:"Există 4: Parlamentul UK (Westminster) pentru probleme generale și Anglia; Parlamentul Scoțian; Senedd (Țara Galilor); Adunarea Irlandei de Nord." },
+];
+
+const CULTURE_DATA = [
+  { icon:"🎵", title:"Muzică tradițională", entries:[
+    { nat:"eng", text:"Morris dancing, folk songs, music halls — tradiție vie în zonele rurale." },
+    { nat:"sco", text:"Cornemuzele (bagpipes), strathspey și reel — nelipsite la ceilidh (petreceri tradiționale)." },
+    { nat:"wal", text:"Choral singing — coruri masculine (male voice choirs) renumite mondial." },
+    { nat:"nir", text:"Muzica tradițională irlandeză (trad sessions în pub-uri) și flute bands protestante." },
+  ]},
+  { icon:"🍺", title:"Cultura pub-ului", entries:[
+    { nat:"eng", text:"Pub-ul englez clasic — ales real (real ale), pub quiz miercuri seara, mâncare simplă." },
+    { nat:"sco", text:"Focus pe whisky single malt; pub-urile din Glasgow au atmosferă mai directă și mai zgomotoasă." },
+    { nat:"wal", text:"Pub-urile de vale (valley pubs) — strâns legate de cultura de miner și comunitate." },
+    { nat:"nir", text:"«The craic» — distracție, povești, muzică trad live. Pub-urile din Belfast sunt faimoase." },
+  ]},
+  { icon:"🏟️", title:"Sport & identitate", entries:[
+    { nat:"eng", text:"Fotbalul — religie națională. Cricket — sport de vară. Premier League — exportul cultural nr. 1." },
+    { nat:"sco", text:"Old Firm (Celtic vs Rangers) — rivalitate religios-politică unică în lume." },
+    { nat:"wal", text:"Rugby union — sport de identitate națională. Stadionul Principality din Cardiff — sacru." },
+    { nat:"nir", text:"GAA (fotbal și hurling gaelic) coexistă cu fotbalul asociație și rugby-ul." },
+  ]},
+  { icon:"🎭", title:"Festivaluri", entries:[
+    { nat:"eng", text:"Notting Hill Carnival (cel mai mare carnaval european), Glastonbury, Guy Fawkes Night." },
+    { nat:"sco", text:"Edinburgh Fringe (cel mai mare festival de arte din lume), Hogmanay (Revelion scoțian)." },
+    { nat:"wal", text:"Eisteddfod — festival de poezie și muzică în Galeză, cu tradiție de 700 de ani." },
+    { nat:"nir", text:"St. Patrick's Day (17 mar), parada Twelfth (12 iul) — profund politică, marchează Bătălia de la Boyne." },
+  ]},
+  { icon:"🥘", title:"Mâncare definitorie", entries:[
+    { nat:"eng", text:"Fish & chips, chicken tikka masala (adoptată), Sunday roast cu Yorkshire pudding." },
+    { nat:"sco", text:"Haggis (măruntaie de oaie cu fulgi de ovăz), Cullen skink (supă de haddock afumat)." },
+    { nat:"wal", text:"Cawl (tocăniță cu miel), Welsh rarebit (brânză topită pe pâine prăjită), bara brith." },
+    { nat:"nir", text:"Ulster Fry, Irish stew, Boxty (pancakes de cartofi), soda bread." },
+  ]},
+  { icon:"🎓", title:"Educație", entries:[
+    { nat:"eng", text:"Taxe universitare de £9.000/an; 11-plus exam selectiv în unele comitate." },
+    { nat:"sco", text:"Universitate GRATUITĂ pentru studenți scoțieni! Curriculum diferit (Highers, nu A-levels)." },
+    { nat:"wal", text:"Educație bilingvă (engleză + galeză) obligatorie până la 16 ani." },
+    { nat:"nir", text:"Sistem separat cu examen de transfer (11-plus); școlile sunt adesea segregate confesional." },
+  ]},
+];
+
+const LANG_DATA = [
+  { nat:"eng", color:"#C8102E", name:"Anglia", langs:[
+    { lang:"Engleză", pct:98, note:"Singura limbă cu statut oficial de facto." },
+    { lang:"Poloneză", pct:3, note:"A doua cea mai vorbită limbă după imigrație." },
+  ]},
+  { nat:"sco", color:"#003087", name:"Scoția", langs:[
+    { lang:"Engleză", pct:99, note:"Dominantă în toată Scoția." },
+    { lang:"Scots", pct:30, note:"Dialect/limbă distinctă; discutat dacă e limbă separată." },
+    { lang:"Gaelică scoțiană", pct:1.1, note:"~60.000 vorbitori, concentrați în Hebride." },
+  ]},
+  { nat:"wal", color:"#00A550", name:"Țara Galilor", langs:[
+    { lang:"Engleză", pct:99, note:"Limba dominantă în viața de zi cu zi." },
+    { lang:"Galeză (Welsh)", pct:29, note:"Co-oficială; predată obligatoriu în școli." },
+  ]},
+  { nat:"nir", color:"#F4A823", name:"Irlanda de Nord", langs:[
+    { lang:"Engleză", pct:99, note:"Singura limbă folosită de toate comunitățile." },
+    { lang:"Irlandeză", pct:6, note:"Statut recunoscut; mai folosită în comunitatea naționalistă." },
+    { lang:"Ulster Scots", pct:10, note:"Dialect scoțian adus de coloniști în sec. XVII." },
+  ]},
+];
+
+const PRON_DATA = [
+  { nat:"eng", color:"#C8102E", name:"🏴󠁧󠁢󠁥󠁮󠁧󠁿 Anglia", phrases:[
+    { word:"Bath", pron:"/bɑːθ/", meaning:"Sunetul «a» este lung — «baaath»" },
+    { word:"Butter", pron:"/ˈbʌtə/", meaning:"«t» medial devine glottal stop în Cockney" },
+    { word:"Glass", pron:"/ɡlɑːs/", meaning:"«a» lung în sudul Angliei, scurt în nord" },
+    { word:"Garage", pron:"/ˈɡærɪdʒ/", meaning:"Accentul variază enorm între clase sociale" },
+  ]},
+  { nat:"sco", color:"#003087", name:"🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scoția", phrases:[
+    { word:"Loch", pron:"/lɒx/", meaning:"Sunetul «ch» = fricativă velară, ca în română «h» aspru" },
+    { word:"Aye", pron:"/aɪ/", meaning:"«Da» — pronunțat ca englezescul «I»" },
+    { word:"Wee", pron:"/wiː/", meaning:"«Mic» — folosit excesiv («a wee cup of tea»)" },
+    { word:"Och", pron:"/ɒx/", meaning:"Exclamație de surpriză sau dezaprobare" },
+  ]},
+  { nat:"wal", color:"#00A550", name:"🏴󠁧󠁢󠁷󠁬󠁳󠁿 Țara Galilor", phrases:[
+    { word:"Llanfair", pron:"/ɬanˈvaɪr/", meaning:"«Ll» galez = fricativă laterală, unic în Europă" },
+    { word:"Cwm", pron:"/kuːm/", meaning:"Vale — nici o vocală tradițională! «w» e vocală în galeză" },
+    { word:"Cymru", pron:"/ˈkʌmrɪ/", meaning:"Numele Țării Galilor în Galeză" },
+    { word:"Hiraeth", pron:"/ˈhɪraɪθ/", meaning:"Dor de casă profund, intraductibil" },
+  ]},
+  { nat:"nir", color:"#F4A823", name:"🇬🇧 Irlanda de Nord", phrases:[
+    { word:"Wee", pron:"/wiː/", meaning:"Folosit și mai mult decât în Scoția!" },
+    { word:"Craic", pron:"/kræk/", meaning:"Distracție, atmosferă — «What's the craic?»" },
+    { word:"Bout ye", pron:"/baʊt jiː/", meaning:"«Cum ești?» — salut clasic Belfast" },
+    { word:"Wile", pron:"/waɪl/", meaning:"«Very / Extremely» — «That's wile good!»" },
+  ]},
+];
+
+let currentFilter = 'all';
+let currentSearch = '';
+
+function renderWordTable() {
+  const tbody = document.getElementById('word-tbody');
+  const filtered = WORDS.filter(w => {
+    const matchCat = currentFilter === 'all' || w.cat === currentFilter;
+    const q = currentSearch.toLowerCase();
+    const matchSearch = !q || [w.concept,w.eng,w.sco,w.wal,w.nir].some(s=>s.toLowerCase().includes(q));
+    return matchCat && matchSearch;
+  });
+  tbody.innerHTML = filtered.map(w=>`
+    <tr>
+      <td><span class="concept">${w.concept}</span></td>
+      <td><span class="badge eng">${w.eng}</span></td>
+      <td><span class="badge sco">${w.sco}</span></td>
+      <td><span class="badge wal">${w.wal}</span></td>
+      <td><span class="badge nir">${w.nir}</span></td>
+    </tr>
+  `).join('');
+}
+
+function setWordFilter(cat, btn) {
+  currentFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active-filter'));
+  btn.classList.add('active-filter');
+  renderWordTable();
+}
+
+function filterWords() {
+  currentSearch = document.getElementById('word-search').value;
+  renderWordTable();
+}
+
+function renderPronunciation() {
+  const wrap = document.getElementById('pron-cards');
+  wrap.innerHTML = PRON_DATA.map(n=>`
+    <div class="phrase-card" style="border-top:3px solid ${n.color}">
+      <h3>${n.name}</h3>
+      <div class="phrase-list">
+        ${n.phrases.map(p=>`
+          <div class="phrase-item">
+            <div class="phrase-word">${p.word}</div>
+            <div class="phrase-pron">${p.pron}</div>
+            <div class="phrase-meaning">${p.meaning}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderCulture() {
+  const grid = document.getElementById('culture-grid');
+  grid.innerHTML = CULTURE_DATA.map(c=>`
+    <div class="culture-card">
+      <div class="culture-icon">${c.icon}</div>
+      <h3>${c.title}</h3>
+      <div class="culture-entries">
+        ${c.entries.map(e=>`
+          <div class="culture-entry">
+            <span class="badge ${e.nat}">${{eng:'Anglia',sco:'Scoția',wal:'Țara Galilor',nir:'N. Irlanda'}[e.nat]}</span>
+            <p>${e.text}</p>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderLanguages() {
+  const legend = document.getElementById('map-legend');
+  const stats = document.getElementById('lang-stats');
+  const details = document.getElementById('lang-details');
+
+  legend.innerHTML = LANG_DATA.map(n=>`
+    <div class="legend-item">
+      <div class="legend-dot" style="background:${n.color}"></div>
+      <div class="legend-text">
+        <h4>${n.name}</h4>
+        <p>${n.langs.map(l=>l.lang).join(', ')}</p>
+      </div>
+    </div>
+  `).join('');
+
+  stats.innerHTML = LANG_DATA.flatMap(n=>n.langs.filter(l=>l.lang!=='Engleză')).map(l=>`
+    <div class="lang-stat">
+      <div class="lang-stat-label"><span>${l.lang}</span><span>${l.pct}%</span></div>
+      <div class="lang-stat-bar"><div class="lang-stat-fill" style="width:${Math.min(l.pct,100)}%;background:#888"></div></div>
+    </div>
+  `).join('');
+
+  details.innerHTML = LANG_DATA.map(n=>`
+    <div class="culture-card" style="border-top:3px solid ${n.color}">
+      <div class="culture-icon">${{eng:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',sco:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',wal:'🏴󠁧󠁢󠁷󠁬󠁳󠁿',nir:'🇬🇧'}[n.nat]}</div>
+      <h3>${n.name}</h3>
+      <div class="culture-entries">
+        ${n.langs.map(l=>`
+          <div class="culture-entry">
+            <span class="badge shared">${l.pct}%</span>
+            <p><strong>${l.lang}</strong> — ${l.note}</p>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+// QUIZ
+let quizIdx = 0;
+let quizScore = 0;
+let quizAnswered = false;
+const shuffled = [...QUIZ_DATA].sort(()=>Math.random()-0.5);
+
+function renderQuizProgress() {
+  const prog = document.getElementById('quiz-progress');
+  prog.innerHTML = shuffled.map((_,i)=>`<div class="progress-dot ${i<quizIdx?'done':i===quizIdx?'current':''}"></div>`).join('');
+}
+
+function renderQuestion() {
+  if (quizIdx >= shuffled.length) { showResult(); return; }
+  quizAnswered = false;
+  document.getElementById('btn-next').classList.remove('show');
+  renderQuizProgress();
+  const q = shuffled[quizIdx];
+  const natLabel = {eng:'🏴󠁧󠁢󠁥󠁮󠁧󠁿 Anglia',sco:'🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scoția',wal:'🏴󠁧󠁢󠁷󠁬󠁳󠁿 Țara Galilor',nir:'🇬🇧 Irlanda de Nord'}[q.nat];
+  const natColor = {eng:'var(--eng)',sco:'var(--sco)',wal:'var(--wal)',nir:'var(--nir)'}[q.nat];
+  const natBg = {eng:'#FFF0F2',sco:'#EEF2FF',wal:'#EEFAF4',nir:'#FFF8EC'}[q.nat];
+  document.getElementById('quiz-score-sm').textContent = `Scor: ${quizScore}/${quizIdx}`;
+  document.getElementById('quiz-content').innerHTML = `
+    <div class="quiz-nation-tag" style="background:${natBg};color:${natColor}">${natLabel}</div>
+    <div class="quiz-q">${q.q}</div>
+    <div class="quiz-context">${q.ctx}</div>
+    <div class="quiz-options">
+      ${q.opts.map((o,i)=>`<button class="quiz-opt" onclick="answerQuiz(${i})">${o}</button>`).join('')}
+    </div>
+    <div class="quiz-feedback" id="quiz-feedback"></div>
+  `;
+}
+
+function answerQuiz(chosen) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  const q = shuffled[quizIdx];
+  const opts = document.querySelectorAll('.quiz-opt');
+  opts.forEach(b=>b.disabled=true);
+  opts[q.ans].classList.add('correct');
+  const fb = document.getElementById('quiz-feedback');
+  if (chosen === q.ans) {
+    quizScore++;
+    opts[chosen].classList.add('correct');
+    fb.className='quiz-feedback show correct-fb';
+    fb.innerHTML = `✓ Corect! ${q.exp}`;
+  } else {
+    opts[chosen].classList.add('wrong');
+    fb.className='quiz-feedback show wrong-fb';
+    fb.innerHTML = `✗ Răspuns greșit. ${q.exp}`;
+  }
+  document.getElementById('quiz-score-sm').textContent = `Scor: ${quizScore}/${quizIdx+1}`;
+  document.getElementById('btn-next').classList.add('show');
+}
+
+function nextQuestion() {
+  quizIdx++;
+  renderQuestion();
+}
+
+function showResult() {
+  const pct = Math.round((quizScore/shuffled.length)*100);
+  const msg = pct>=80?"Excelent! Cunoști UK foarte bine!":pct>=50?"Bun! Mai ai lucruri de descoperit.":"Mai studiază — UK are multe secrete!";
+  document.getElementById('quiz-progress').innerHTML = shuffled.map(()=>`<div class="progress-dot done"></div>`).join('');
+  document.getElementById('quiz-content').innerHTML = `
+    <div class="quiz-result">
+      <div class="quiz-result-score">${quizScore}/${shuffled.length}</div>
+      <p>${msg}</p>
+      <button class="btn-restart" onclick="restartQuiz()">Încearcă din nou</button>
+    </div>
+  `;
+  document.getElementById('btn-next').classList.remove('show');
+  document.getElementById('quiz-score-sm').textContent = '';
+}
+
+function restartQuiz() {
+  shuffled.sort(()=>Math.random()-0.5);
+  quizIdx = 0; quizScore = 0;
+  renderQuestion();
+}
+
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('section-'+id).classList.add('active');
+  const tabs = ['overview','words','pronunciation','culture','languages','quiz'];
+  const idx = tabs.indexOf(id);
+  document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+}
+
+// Init all
+renderWordTable();
+renderPronunciation();
+renderCulture();
+renderLanguages();
+renderQuestion();
+</script>
+</body>
+</html>
